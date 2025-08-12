@@ -1,0 +1,108 @@
+Build GhostVault, a student-grade secure vault that supports: real vault, multiple decoy vaults, a panic password that securely wipes/zeroes key material, a failed-attempt counter with self-destruct threshold, and an audit log. The project must use modern crypto (Argon2 for KDF, AES-GCM for authenticated encryption), be runnable on Replit, include a minimal web UI (Flask) and a CLI, and include full code, tests, README and demo script.
+
+Strict requirements
+
+Provide a complete runnable project; do not skip or stub core functions.
+
+Use secure cryptography primitives: Argon2 (recommended libs: argon2-cffi), AES-GCM (cryptography lib). Do not invent crypto.
+
+Use a random salt per vault header and store metadata encrypted.
+
+Provide unit tests for KDF, encryption/decryption, decoy unlock, and panic wipe.
+
+Provide a README.md with run steps for Replit and local, an architecture diagram (ASCII or PNG), and a short viva/demo script (what to show).
+
+Provide seed/sample data: 1 real vault (images/docs), 2 decoys with believable content.
+
+Write clear comments and a short security notes file explaining limitations (SSD deletion caveats, access-pattern leakage).
+
+Tech stack & deps
+
+Python 3.11+
+
+Flask for web UI (one-page unlock/create flow)
+
+cryptography for AES-GCM (pip install cryptography)
+
+argon2-cffi for KDF (pip install argon2-cffi)
+
+pytest for tests
+
+optional: pyinstaller not necessary but mention packaging steps
+
+High-level features to implement
+
+Vault creation CLI/web form: real password, panic password, optional decoy passwords; upload files for real and decoys.
+
+On creation: derive symmetric key with Argon2, generate random header (type + pointer + metadata), encrypt header with AES-GCM; store blobs in vaults/ and headers/. Each header is encrypted with password-derived key.
+
+Unlock flow: user inputs password → derive key → try to decrypt all headers (real + decoy + panic) until one decrypts successfully. If header.type == real → show real vault; decoy → show decoy; panic → perform wipe. If no header decrypts, increment fail-counter.
+
+Fail-counter & brute-force protection: store a salted, HMAC-signed counter/nonce in state.json; after N failed attempts (configurable, e.g. 5), trigger self-destruct: overwrite key material and clear vault files. Provide a simulated "secure overwrite" routine and warn about SSD caveats in docs.
+
+Panic password: if panic header is decrypted, securely erase key material (overwrite header bytes, remove files) and optionally leave decoy.
+
+Audit log: encrypted hidden log of all unlock attempts (store in logs/audit.log.enc); only visible to the real password after unlock.
+
+UI: Flask page to create vault, list decoy metadata (for admin), unlock input, and simple display of files. Also provide CLI commands: create-vault, unlock, panic-sim.
+
+Storage layout
+
+pgsql
+Copy
+Edit
+/vault-project
+  /vaults/           # encrypted blobs for each vault (real/decoy)
+  /headers/          # one encrypted header per password (real/decoy/panic)
+  /logs/             # audit.log.enc
+  app.py             # Flask app + CLI runner
+  crypto.py          # KDF, encrypt/decrypt, secure-wipe functions
+  storage.py         # file operations: write_blob, overwrite_file
+  ui_templates/      # HTML templates for Flask
+  tests/             # pytest tests
+  README.md
+Detailed function requirements (must be implemented)
+
+crypto.derive_key(password: str, salt: bytes) -> bytes — Argon2 with recommended params (show chosen memory, iterations, parallelism).
+
+crypto.encrypt_blob(key: bytes, plaintext: bytes) -> dict — returns {nonce, ciphertext, tag} packaged. Use AES-GCM.
+
+crypto.decrypt_blob(key: bytes, package: dict) -> bytes — verify auth tag and return plaintext or raise.
+
+storage.create_header(blob_id: str, vault_type: str, metadata: dict, key: bytes) -> bytes — serialize header and return encrypted package written to headers/{id}.hdr. vault_type in ["real","decoy","panic"].
+
+storage.attempt_unlock(password: str) -> (vault_type, blob_id) — tries headers and returns which vault unlocked or increments fail counter.
+
+wipe_overwrite(path: str, passes: int = 3) — overwrite file contents with random bytes passes times then delete; also zero out sensitive variables in memory as far as Python allows. (Document SSD caveat.)
+
+audit.log_attempt(password_token: str, success: bool, vault_type: Optional[str]) — append an encrypted log entry.
+
+Acceptance criteria / tests
+
+Unit tests that: create vault with real & 2 decoys, unlock real with real password, unlock decoy with decoy password, panic password triggers wipe (assert files removed), repeated wrong attempts trigger self-destruct.
+
+Provide simple performance numbers (avg encryption time for a 1MB file).
+
+Deliverables
+
+Full repo with code & tests.
+
+README.md with run instructions, KDF/crypto parameters, and sample commands for the viva.
+
+A short demo_script.md explaining the three scenario steps to record: (1) unlock real, (2) unlock decoy, (3) panic wipe.
+
+A security_notes.md listing limitations and future work.
+
+Extras (nice-to-have)
+
+Simple decoy generator: based on templates for documents and images (placeholder fake names, dates).
+
+A visual indicator in UI showing “this is a decoy vault — plausible content” (for demo).
+
+Small screenshot images included under assets/.
+
+Tone for code/comments
+
+Clear, beginner-friendly comments; do not obfuscate. But respect secure defaults.
+
+Deliver the project now — make it runnable on Replit and include a one-click run instruction in README.md.
