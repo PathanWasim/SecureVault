@@ -1,0 +1,76 @@
+CS 301 - Data Structures and Algorithms
+Assignment 4: Binary Search Trees
+Due: March 22, 2024
+
+Name: Alex Johnson
+Student ID: 20241567
+Section: 02
+
+Problem 1: BST Implementation
+============================
+
+Implement a binary search tree with the following operations:
+- insert(key, value)
+- search(key)
+- delete(key)
+- inorder_traversal()
+
+My Implementation:
+
+class TreeNode:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.left = None
+        self.right = None
+
+class BST:
+    def __init__(self):
+        self.root = None
+    
+    def insert(self, key, value):
+        if self.root is None:
+            self.root = TreeNode(key, value)
+        else:
+            self._insert_recursive(self.root, key, value)
+    
+    def _insert_recursive(self, node, key, value):
+        if key < node.key:
+            if node.left is None:
+                node.left = TreeNode(key, value)
+            else:
+                self._insert_recursive(node.left, key, value)
+        elif key > node.key:
+            if node.right is None:
+                node.right = TreeNode(key, value)
+            else:
+                self._insert_recursive(node.right, key, value)
+
+Problem 2: Time Complexity Analysis
+===================================
+
+Search Operation: O(log n) average case, O(n) worst case
+Insert Operation: O(log n) average case, O(n) worst case
+Delete Operation: O(log n) average case, O(n) worst case
+
+The worst case occurs when the tree becomes skewed (essentially a linked list).
+
+Problem 3: Balancing Discussion
+===============================
+
+To maintain O(log n) operations, we could use:
+- AVL trees (height-balanced)
+- Red-black trees (color-balanced)
+- Splay trees (self-adjusting)
+
+I think AVL trees would be best because they guarantee the strictest balance.
+
+Notes for Exam:
+- Remember BST property: left < root < right
+- In-order traversal gives sorted sequence
+- Practice tree rotations for balancing
+
+Study Group Meeting: Thursday 7pm, Library Room 204
+Midterm Review: March 18, Professor's office hours 2-4pm
+
+Grade Estimate: Hoping for A- or better

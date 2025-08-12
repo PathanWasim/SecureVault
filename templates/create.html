@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Vault System - GhostVault</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>
+                        <i class="fas fa-plus-circle text-success me-2"></i>
+                        Create Vault System
+                    </h2>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Home
+                    </a>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Creation Form -->
+                <form method="POST" enctype="multipart/form-data" id="vaultForm">
+                    <div class="row">
+                        <!-- Password Configuration -->
+                        <div class="col-md-6">
+                            <div class="card bg-secondary mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-key text-warning me-2"></i>
+                                        Password Configuration
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="real_password" class="form-label">
+                                            <i class="fas fa-shield-alt text-success me-1"></i>
+                                            Real Vault Password
+                                        </label>
+                                        <input type="password" class="form-control" id="real_password" name="real_password" required>
+                                        <div class="form-text">Password to access your real data</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="panic_password" class="form-label">
+                                            <i class="fas fa-exclamation-triangle text-danger me-1"></i>
+                                            Panic Password
+                                        </label>
+                                        <input type="password" class="form-control" id="panic_password" name="panic_password" required>
+                                        <div class="form-text text-danger">⚠️ Using this password will destroy all vaults</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="decoy1_password" class="form-label">
+                                            <i class="fas fa-mask text-info me-1"></i>
+                                            Decoy Vault 1 Password
+                                        </label>
+                                        <input type="password" class="form-control" id="decoy1_password" name="decoy1_password" required>
+                                        <div class="form-text">Password for first decoy vault</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="decoy2_password" class="form-label">
+                                            <i class="fas fa-mask text-info me-1"></i>
+                                            Decoy Vault 2 Password
+                                        </label>
+                                        <input type="password" class="form-control" id="decoy2_password" name="decoy2_password" required>
+                                        <div class="form-text">Password for second decoy vault</div>
+                                    </div>
+
+                                    <!-- Password Strength Indicator -->
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Security Note:</strong> All passwords must be unique and strong. Consider using a password manager.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File Upload Configuration -->
+                        <div class="col-md-6">
+                            <div class="card bg-secondary mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-upload text-primary me-2"></i>
+                                        File Upload Configuration
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-shield-alt text-success me-1"></i>
+                                            Real Vault Files
+                                        </label>
+                                        <input type="file" class="form-control" name="real_files" multiple accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx">
+                                        <div class="form-text">Upload your real sensitive files (max 16MB per file)</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-mask text-info me-1"></i>
+                                            Decoy Vault 1 Files
+                                        </label>
+                                        <input type="file" class="form-control" name="decoy1_files" multiple accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx">
+                                        <div class="form-text">Upload believable decoy files (e.g., homework, notes)</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-mask text-info me-1"></i>
+                                            Decoy Vault 2 Files
+                                        </label>
+                                        <input type="file" class="form-control" name="decoy2_files" multiple accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx">
+                                        <div class="form-text">Upload more believable decoy files (e.g., recipes, lists)</div>
+                                    </div>
+
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Sample Data:</strong> If no files are uploaded, sample data will be used for demonstration.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Information -->
+                    <div class="card bg-dark border-warning mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Security Configuration
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6 class="text-info">Key Derivation</h6>
+                                    <ul class="small text-muted mb-0">
+                                        <li>Argon2id algorithm</li>
+                                        <li>64MB memory usage</li>
+                                        <li>3 iterations</li>
+                                        <li>4 parallel threads</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-info">Encryption</h6>
+                                    <ul class="small text-muted mb-0">
+                                        <li>AES-256-GCM</li>
+                                        <li>Authenticated encryption</li>
+                                        <li>Random nonces</li>
+                                        <li>Integrity protection</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-info">Protection</h6>
+                                    <ul class="small text-muted mb-0">
+                                        <li>5 failed attempt limit</li>
+                                        <li>Auto self-destruct</li>
+                                        <li>Encrypted audit log</li>
+                                        <li>Panic wipe capability</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg" id="createBtn">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Create Vault System
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Instructions -->
+                <div class="card bg-dark border-info mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle text-info me-2"></i>
+                            Instructions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-warning">Before Creating:</h6>
+                                <ul class="text-muted">
+                                    <li>Choose strong, unique passwords for each vault</li>
+                                    <li>Prepare believable decoy files (homework, recipes, etc.)</li>
+                                    <li>Remember: panic password destroys everything</li>
+                                    <li>Consider the order of plausible deniability</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-warning">After Creating:</h6>
+                                <ul class="text-muted">
+                                    <li>Test all passwords to ensure they work</li>
+                                    <li>Store passwords securely (password manager)</li>
+                                    <li>Understand the security limitations</li>
+                                    <li>Have a backup plan for important data</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation and UX improvements
+        document.getElementById('vaultForm').addEventListener('submit', function(e) {
+            const createBtn = document.getElementById('createBtn');
+            createBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
+            createBtn.disabled = true;
+            
+            // Check for password uniqueness
+            const passwords = [
+                document.getElementById('real_password').value,
+                document.getElementById('panic_password').value,
+                document.getElementById('decoy1_password').value,
+                document.getElementById('decoy2_password').value
+            ];
+            
+            const uniquePasswords = new Set(passwords);
+            if (uniquePasswords.size !== passwords.length) {
+                e.preventDefault();
+                alert('All passwords must be unique!');
+                createBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Create Vault System';
+                createBtn.disabled = false;
+                return;
+            }
+            
+            // Check for minimum password strength
+            for (let i = 0; i < passwords.length; i++) {
+                if (passwords[i].length < 6) {
+                    e.preventDefault();
+                    alert('All passwords must be at least 6 characters long!');
+                    createBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Create Vault System';
+                    createBtn.disabled = false;
+                    return;
+                }
+            }
+        });
+
+        // File size validation
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function(e) {
+                const files = e.target.files;
+                for (let file of files) {
+                    if (file.size > 16 * 1024 * 1024) { // 16MB
+                        alert(`File ${file.name} is too large. Maximum size is 16MB.`);
+                        e.target.value = '';
+                        break;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

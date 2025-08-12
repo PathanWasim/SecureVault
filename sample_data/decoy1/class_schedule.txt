@@ -1,0 +1,66 @@
+Spring 2024 Class Schedule - Alex Johnson
+=========================================
+
+MONDAY:
+-------
+9:00-10:15 AM  CS 301 - Data Structures & Algorithms
+               Prof. Martinez, Engineering Building Room 205
+               
+11:00-12:15 PM MATH 220 - Discrete Mathematics  
+               Prof. Kim, Math Building Room 110
+               
+2:00-3:15 PM   ENGL 102 - Composition II
+               Prof. Davis, Liberal Arts Building Room 302
+
+TUESDAY:
+--------
+10:00-11:15 AM HIST 105 - World History Since 1500
+               Prof. Thompson, History Building Room 150
+               
+1:00-2:15 PM   CS 301 Lab - Data Structures Lab
+               TA: Sarah Chen, Computer Lab Room 20
+
+WEDNESDAY:
+----------
+9:00-10:15 AM  CS 301 - Data Structures & Algorithms
+               Prof. Martinez, Engineering Building Room 205
+               
+11:00-12:15 PM MATH 220 - Discrete Mathematics
+               Prof. Kim, Math Building Room 110
+               
+2:00-3:15 PM   ENGL 102 - Composition II
+               Prof. Davis, Liberal Arts Building Room 302
+
+THURSDAY:
+---------
+10:00-11:15 AM HIST 105 - World History Since 1500
+               Prof. Thompson, History Building Room 150
+               
+3:00-4:15 PM   PHYS 101 - General Physics I
+               Prof. Wilson, Physics Building Room 125
+
+FRIDAY:
+-------
+9:00-10:15 AM  CS 301 - Data Structures & Algorithms
+               Prof. Martinez, Engineering Building Room 205
+               
+11:00-12:15 PM MATH 220 - Discrete Mathematics
+               Prof. Kim, Math Building Room 110
+
+Office Hours:
+- CS 301: Tuesdays 3-5pm, Prof. Martinez
+- MATH 220: Wednesdays 1-3pm, Prof. Kim  
+- ENGL 102: Thursdays 1-2pm, Prof. Davis
+
+Exam Schedule:
+- CS 301 Midterm: March 18, 9:00 AM
+- MATH 220 Quiz: March 20, 11:00 AM
+- HIST 105 Essay Due: March 25
+- ENGL 102 Research Paper Due: April 2
+
+Study Groups:
+- CS Study Group: Thursdays 7pm, Library Room 204
+- Math Tutoring: Tuesdays 6pm, Math Building Room 15
+
+Total Credits: 15 hours
+GPA Goal: 3.5 or higher
