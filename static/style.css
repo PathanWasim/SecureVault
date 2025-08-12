@@ -113,3 +113,104 @@
     border-left: 4px solid #28a745;
     background: rgba(40, 167, 69, 0.1);
 }
+
+/* Password strength indicators */
+.password-strength-bar {
+    height: 4px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.password-strength-weak { background-color: #dc3545; }
+.password-strength-fair { background-color: #ffc107; }
+.password-strength-good { background-color: #17a2b8; }
+.password-strength-strong { background-color: #28a745; }
+
+.password-feedback {
+    font-size: 0.8em;
+    min-height: 1.2em;
+}
+
+/* File upload enhancements */
+.file-drop-zone {
+    border: 2px dashed #6c757d;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-drop-zone:hover,
+.file-drop-zone.dragover {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.file-list-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.progress-indicators {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    position: relative;
+}
+
+.progress-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    padding: 10px;
+}
+
+.progress-step.active {
+    color: #007bff;
+}
+
+.progress-step.completed {
+    color: #28a745;
+}
+
+.progress-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #6c757d;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+.progress-step.active::before {
+    background: #007bff;
+}
+
+.progress-step.completed::before {
+    background: #28a745;
+}
+
+.progress-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 65%;
+    width: 70%;
+    height: 2px;
+    background: #6c757d;
+    z-index: 0;
+}
+
+.progress-step.completed:not(:last-child)::after {
+    background: #28a745;
+}

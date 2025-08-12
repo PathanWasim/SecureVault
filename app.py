@@ -34,10 +34,105 @@ os.makedirs('uploads', exist_ok=True)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def check_password_strength(password):
+    """Check password strength and return score and feedback"""
+    if not password:
+        return 0, "Password is required"
+    
+    score = 0
+    feedback = []
+    
+    # Length check
+    if len(password) >= 12:
+        score += 2
+    elif len(password) >= 8:
+        score += 1
+    else:
+        feedback.append("Use at least 8 characters (12+ recommended)")
+    
+    # Character variety checks
+    if any(c.isupper() for c in password):
+        score += 1
+    else:
+        feedback.append("Include uppercase letters")
+    
+    if any(c.islower() for c in password):
+        score += 1
+    else:
+        feedback.append("Include lowercase letters")
+    
+    if any(c.isdigit() for c in password):
+        score += 1
+    else:
+        feedback.append("Include numbers")
+    
+    if any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?' for c in password):
+        score += 1
+    else:
+        feedback.append("Include special characters")
+    
+    # Common password checks
+    common_passwords = ['password', '123456', 'qwerty', 'admin', 'letmein']
+    if password.lower() in common_passwords:
+        score = max(0, score - 3)
+        feedback.append("Avoid common passwords")
+    
+    # Strength levels
+    if score >= 6:
+        strength = "Strong"
+    elif score >= 4:
+        strength = "Good"
+    elif score >= 2:
+        strength = "Fair"
+    else:
+        strength = "Weak"
+    
+    return score, strength, feedback
+
+@app.route('/check-password-strength', methods=['POST'])
+def check_password_api():
+    """API endpoint for password strength checking"""
+    password = request.json.get('password', '') if request.json else ''
+    result = check_password_strength(password)
+    if len(result) == 2:
+        score, message = result
+        return {
+            'score': score,
+            'strength': 'Weak',
+            'feedback': [message],
+            'max_score': 6
+        }
+    else:
+        score, strength, feedback = result
+        return {
+            'score': score,
+            'strength': strength,
+            'feedback': feedback,
+            'max_score': 6
+        }
+
 @app.route('/')
 def index():
     """Main page with options to create or unlock vault"""
-    return render_template('index.html')
+    # Get system status for dashboard
+    try:
+        system_status = storage.get_system_status()
+        return render_template('index.html', system_status=system_status)
+    except Exception as e:
+        logger.error(f"Error getting system status: {str(e)}")
+        return render_template('index.html', system_status=None)
+
+@app.route('/system-status')
+def system_status():
+    """System status and monitoring page"""
+    try:
+        status = storage.get_system_status()
+        audit_stats = audit.get_audit_stats()
+        return render_template('system_status.html', status=status, audit_stats=audit_stats)
+    except Exception as e:
+        logger.error(f"Error getting system status: {str(e)}")
+        flash(f'Error getting system status: {str(e)}', 'error')
+        return redirect(url_for('index'))
 
 @app.route('/create', methods=['GET', 'POST'])
 def create_vault():
@@ -190,9 +285,133 @@ def logout():
     flash('Logged out successfully', 'info')
     return redirect(url_for('index'))
 
-@app.route('/status')
-def system_status():
-    """Show system status including fail counter"""
+@app.route('/export-audit')
+def export_audit():
+    """Export audit log in various formats"""
+    if not session.get('unlocked') or session.get('vault_type') != 'real':
+        flash('Only available for real vault access', 'error')
+        return redirect(url_for('index'))
+    
+    format_type = request.args.get('format', 'json')
+    try:
+        audit_data = audit.export_audit_log(format_type)
+        if format_type == 'json':
+            return audit_data, 200, {'Content-Type': 'application/json'}
+        elif format_type == 'csv':
+            from flask import Response
+            return Response(audit_data, 
+                          mimetype='text/csv',
+                          headers={'Content-Disposition': 'attachment; filename=audit_log.csv'})
+    except Exception as e:
+        flash(f'Export failed: {str(e)}', 'error')
+        return redirect(url_for('vault_view'))
+
+@app.route('/wipe-system', methods=['POST'])
+def wipe_system():
+    """Emergency system wipe (requires confirmation)"""
+    if request.method == 'POST':
+        confirm = request.form.get('confirm_wipe')
+        if confirm != 'WIPE':
+            flash('Confirmation required to wipe system', 'error')
+            return redirect(url_for('system_status'))
+        
+        try:
+            wipe.self_destruct()
+            session.clear()
+            flash('System has been completely wiped', 'warning')
+            return redirect(url_for('index'))
+        except Exception as e:
+            flash(f'Wipe failed: {str(e)}', 'error')
+            return redirect(url_for('system_status'))
+
+@app.route('/benchmark')
+def crypto_benchmark():
+    """Run cryptographic performance benchmarks"""
+    try:
+        from crypto_benchmarks import generate_comprehensive_report
+        report = generate_comprehensive_report()
+        return render_template('benchmark_results.html', report=report)
+    except Exception as e:
+        flash(f'Benchmark failed: {str(e)}', 'error')
+        return redirect(url_for('system_status'))
+
+@app.route('/security-audit')  
+def security_audit():
+    """Comprehensive security audit page"""
+    try:
+        # Get system security metrics
+        system_status = storage.get_system_status()
+        audit_stats = audit.get_audit_stats()
+        
+        # Calculate security score
+        security_score = calculate_security_score(system_status, audit_stats)
+        
+        return render_template('security_audit.html', 
+                             system_status=system_status,
+                             audit_stats=audit_stats,
+                             security_score=security_score)
+    except Exception as e:
+        flash(f'Security audit failed: {str(e)}', 'error')
+        return redirect(url_for('system_status'))
+
+def calculate_security_score(system_status: dict, audit_stats: dict) -> dict:
+    """Calculate overall security score based on various metrics"""
+    score = 100
+    issues = []
+    
+    # Check failed attempts
+    failed_ratio = system_status.get('failed_attempts', 0) / max(system_status.get('max_attempts', 5), 1)
+    if failed_ratio > 0.8:
+        score -= 20
+        issues.append("High number of failed attempts detected")
+    elif failed_ratio > 0.5:
+        score -= 10
+        issues.append("Moderate failed attempt rate")
+    
+    # Check vault configuration
+    if system_status.get('vault_count', 0) == 0:
+        score -= 30
+        issues.append("No vaults configured")
+    
+    # Check audit log health
+    if audit_stats.get('total_attempts', 0) == 0:
+        score -= 10
+        issues.append("No audit entries (system unused)")
+    
+    # Success rate analysis
+    if audit_stats.get('total_attempts', 0) > 0:
+        success_rate = audit_stats.get('successful_attempts', 0) / audit_stats.get('total_attempts', 1)
+        if success_rate < 0.3:
+            score -= 25
+            issues.append("Very low success rate - possible brute force attack")
+        elif success_rate < 0.5:
+            score -= 15
+            issues.append("Low success rate detected")
+    
+    # Determine rating
+    if score >= 90:
+        rating = "Excellent"
+        color = "success"
+    elif score >= 75:
+        rating = "Good" 
+        color = "info"
+    elif score >= 60:
+        rating = "Fair"
+        color = "warning"
+    else:
+        rating = "Poor"
+        color = "danger"
+    
+    return {
+        'score': max(0, score),
+        'rating': rating,
+        'color': color,
+        'issues': issues
+    }
+
+@app.route('/api/status')
+def api_status():
+    """API endpoint for system status including fail counter"""
     try:
         status = storage.get_system_status()
         return json.dumps(status, indent=2)

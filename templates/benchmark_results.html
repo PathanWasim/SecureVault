@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Benchmarks - GhostVault</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="display-5">
+                        <i class="fas fa-tachometer-alt text-info me-3"></i>
+                        Performance Benchmarks
+                    </h1>
+                    <div>
+                        <a href="{{ url_for('security_audit') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-shield-alt me-2"></i>Security Audit
+                        </a>
+                        <a href="{{ url_for('system_status') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-chart-line me-2"></i>System Status
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </div>
+                </div>
+
+                <!-- System Information -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-secondary">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>
+                                            <i class="fas fa-info-circle text-info me-2"></i>
+                                            System Information
+                                        </h6>
+                                        <p class="small text-muted mb-0">
+                                            Python: {{ report.system_info.python_version.split()[0] if report and report.system_info else 'Unknown' }}<br>
+                                            Platform: {{ report.system_info.platform if report and report.system_info else 'Unknown' }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>
+                                            <i class="fas fa-clock text-info me-2"></i>
+                                            Benchmark Time
+                                        </h6>
+                                        <p class="small text-muted mb-0">
+                                            {% if report and report.timestamp %}
+                                                {{ report.timestamp | int | strftime('%Y-%m-%d %H:%M:%S') }}
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Argon2 Benchmarks -->
+                {% if report and report.argon2_benchmark %}
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-secondary">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-key text-warning me-2"></i>
+                                    Argon2 Key Derivation Performance
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Iterations</th>
+                                                <th>Average Time</th>
+                                                <th>Min Time</th>
+                                                <th>Max Time</th>
+                                                <th>Std Dev</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key, value in report.argon2_benchmark.items() %}
+                                            <tr>
+                                                <td>{{ key.replace('_iterations', '') }}</td>
+                                                <td>{{ "%.4f" | format(value.average_time) }}s</td>
+                                                <td>{{ "%.4f" | format(value.min_time) }}s</td>
+                                                <td>{{ "%.4f" | format(value.max_time) }}s</td>
+                                                <td>{{ "%.4f" | format(value.std_dev) }}s</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="alert alert-info small">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Higher iteration counts provide better security but increase computation time.
+                                    Current setting: 3 iterations (balanced security/performance).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Encryption Benchmarks -->
+                {% if report and report.encryption_benchmark %}
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-secondary">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-lock text-success me-2"></i>
+                                    AES-GCM Encryption Performance
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Data Size</th>
+                                                <th>Average Time</th>
+                                                <th>Throughput (MB/s)</th>
+                                                <th>Min Time</th>
+                                                <th>Max Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key, value in report.encryption_benchmark.items() %}
+                                            <tr>
+                                                <td>{{ key.replace('_bytes', '') | int | filesizeformat }}</td>
+                                                <td>{{ "%.4f" | format(value.average_time) }}s</td>
+                                                <td>{{ "%.2f" | format(value.throughput_mbps) }}</td>
+                                                <td>{{ "%.4f" | format(value.min_time) }}s</td>
+                                                <td>{{ "%.4f" | format(value.max_time) }}s</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="alert alert-success small">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    AES-GCM provides authenticated encryption with excellent performance.
+                                    Higher throughput indicates better hardware acceleration support.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Vault Operations -->
+                {% if report and report.vault_operations %}
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-secondary">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-database text-primary me-2"></i>
+                                    Vault Operations Performance
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% if 'vault_creation' in report.vault_operations %}
+                                    <div class="col-md-6">
+                                        <h6>Vault Creation</h6>
+                                        <table class="table table-dark table-sm">
+                                            <tr>
+                                                <td>Average Time:</td>
+                                                <td>{{ "%.4f" | format(report.vault_operations.vault_creation.average_time) }}s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Min Time:</td>
+                                                <td>{{ "%.4f" | format(report.vault_operations.vault_creation.min_time) }}s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Max Time:</td>
+                                                <td>{{ "%.4f" | format(report.vault_operations.vault_creation.max_time) }}s</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if 'vault_unlock' in report.vault_operations %}
+                                    <div class="col-md-6">
+                                        <h6>Vault Unlock</h6>
+                                        <table class="table table-dark table-sm">
+                                            <tr>
+                                                <td>Average Time:</td>
+                                                <td>{{ "%.4f" | format(report.vault_operations.vault_unlock.average_time) }}s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Min Time:</td>
+                                                <td>{{ "%.4f" | format(report.vault_operations.vault_unlock.min_time) }}s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Max Time:</td>
+                                                <td>{{ "%.4f" | format(report.vault_operations.vault_unlock.max_time) }}s</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Security Timing Analysis -->
+                {% if report and report.security_timing %}
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-dark border-info">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    Security Timing Analysis
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if 'timing_analysis' in report.security_timing %}
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <table class="table table-dark table-sm">
+                                            <tr>
+                                                <td>Same Data Comparison (avg):</td>
+                                                <td>{{ "%.2f" | format(report.security_timing.timing_analysis.same_data_avg_ns) }} ns</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Different Data Comparison (avg):</td>
+                                                <td>{{ "%.2f" | format(report.security_timing.timing_analysis.diff_data_avg_ns) }} ns</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Timing Attack Resistance:</td>
+                                                <td>
+                                                    {% if report.security_timing.timing_analysis.timing_consistent %}
+                                                        <span class="badge bg-success">PASS</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">FAIL</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="alert alert-info small">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Constant-time comparisons prevent timing-based attacks on password verification.
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Memory Usage -->
+                {% if report and report.memory_analysis %}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-secondary">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-memory text-warning me-2"></i>
+                                    Memory Usage Analysis
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-striped">
+                                        <tr>
+                                            <td>Initial Memory Usage:</td>
+                                            <td>{{ "%.2f" | format(report.memory_analysis.initial_memory_mb) }} MB</td>
+                                        </tr>
+                                        <tr>
+                                            <td>During Encryption:</td>
+                                            <td>{{ "%.2f" | format(report.memory_analysis.memory_during_encryption_mb) }} MB</td>
+                                        </tr>
+                                        <tr>
+                                            <td>During Decryption:</td>
+                                            <td>{{ "%.2f" | format(report.memory_analysis.memory_during_decryption_mb) }} MB</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Encryption Memory Delta:</td>
+                                            <td>{{ "%.2f" | format(report.memory_analysis.encryption_memory_delta_mb) }} MB</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Decryption Memory Delta:</td>
+                                            <td>{{ "%.2f" | format(report.memory_analysis.decryption_memory_delta_mb) }} MB</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No benchmark data available. Please run the benchmark again.
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

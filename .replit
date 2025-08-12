@@ -40,3 +40,7 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "uv add cryptography argon2-cffi pytest"
+
+[[ports]]
+localPort = 5000
+externalPort = 80

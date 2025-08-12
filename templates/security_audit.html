@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Audit - GhostVault</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="display-5">
+                        <i class="fas fa-shield-alt text-info me-3"></i>
+                        Security Audit
+                    </h1>
+                    <div>
+                        <a href="{{ url_for('system_status') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-chart-line me-2"></i>System Status
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Security Score -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-secondary">
+                            <div class="card-body text-center">
+                                <h2 class="mb-4">Overall Security Score</h2>
+                                <div class="position-relative d-inline-block">
+                                    <svg width="150" height="150" class="circular-progress">
+                                        <circle cx="75" cy="75" r="60" fill="none" stroke="#444" stroke-width="10"/>
+                                        <circle cx="75" cy="75" r="60" fill="none" 
+                                                stroke="{{ 'var(--bs-success)' if security_score.color == 'success' else 
+                                                          'var(--bs-info)' if security_score.color == 'info' else
+                                                          'var(--bs-warning)' if security_score.color == 'warning' else
+                                                          'var(--bs-danger)' }}"
+                                                stroke-width="10" 
+                                                stroke-dasharray="{{ (security_score.score / 100) * 377 if security_score else 0 }}, 377"
+                                                stroke-linecap="round"
+                                                transform="rotate(-90 75 75)"/>
+                                    </svg>
+                                    <div class="position-absolute top-50 start-50 translate-middle">
+                                        <h3 class="text-{{ security_score.color if security_score else 'muted' }}">
+                                            {{ security_score.score if security_score else '?' }}
+                                        </h3>
+                                        <small class="text-muted">/ 100</small>
+                                    </div>
+                                </div>
+                                <h4 class="mt-3 text-{{ security_score.color if security_score else 'muted' }}">
+                                    {{ security_score.rating if security_score else 'Unknown' }}
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Issues -->
+                {% if security_score and security_score.issues %}
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-dark border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Security Issues Found
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled mb-0">
+                                    {% for issue in security_score.issues %}
+                                    <li class="mb-2">
+                                        <i class="fas fa-circle text-warning me-2" style="font-size: 0.5em;"></i>
+                                        {{ issue }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Detailed Security Analysis -->
+                <div class="row mb-5">
+                    <div class="col-md-6">
+                        <div class="card bg-secondary h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-lock me-2"></i>
+                                    Access Control
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-dark table-sm">
+                                    <tr>
+                                        <td>Failed Attempts:</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if system_status.failed_attempts > 3 else 'warning' if system_status.failed_attempts > 0 else 'success' }}">
+                                                {{ system_status.failed_attempts if system_status else 0 }} / {{ system_status.max_attempts if system_status else 5 }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Active Vaults:</td>
+                                        <td>{{ system_status.vault_count if system_status else 0 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Stored Headers:</td>
+                                        <td>{{ system_status.header_count if system_status else 0 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Self-Destruct:</td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Armed
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card bg-secondary h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-clipboard-list me-2"></i>
+                                    Audit Metrics
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if audit_stats %}
+                                <table class="table table-dark table-sm">
+                                    <tr>
+                                        <td>Total Attempts:</td>
+                                        <td>{{ audit_stats.total_attempts }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Successful:</td>
+                                        <td class="text-success">{{ audit_stats.successful_attempts }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Failed:</td>
+                                        <td class="text-danger">{{ audit_stats.failed_attempts }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Success Rate:</td>
+                                        <td>
+                                            {% set success_rate = (audit_stats.successful_attempts / audit_stats.total_attempts * 100) if audit_stats.total_attempts > 0 else 0 %}
+                                            <span class="badge bg-{{ 'success' if success_rate > 80 else 'warning' if success_rate > 50 else 'danger' }}">
+                                                {{ "%.1f" | format(success_rate) }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                                {% else %}
+                                <p class="text-muted">No audit data available</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cryptographic Security -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="card bg-secondary">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-key me-2"></i>
+                                    Cryptographic Security
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                                            <h6>Key Derivation</h6>
+                                            <small class="text-success">Argon2id</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <i class="fas fa-lock fa-2x text-success mb-2"></i>
+                                            <h6>Encryption</h6>
+                                            <small class="text-success">AES-256-GCM</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <i class="fas fa-fingerprint fa-2x text-success mb-2"></i>
+                                            <h6>Authentication</h6>
+                                            <small class="text-success">AEAD Built-in</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <i class="fas fa-random fa-2x text-success mb-2"></i>
+                                            <h6>Randomness</h6>
+                                            <small class="text-success">Cryptographically Secure</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Recommendations -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-dark border-info">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    Security Recommendations
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Best Practices</h6>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                Use unique, strong passwords for each vault
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                Regularly monitor failed attempt counters
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                Review audit logs periodically
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                Test panic wipe procedure in safe environment
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Operational Security</h6>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2">
+                                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                                This is for educational purposes only
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                                SSDs may retain data despite wiping
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                                Consider physical security of storage device
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                                Backup important data separately
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
