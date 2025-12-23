@@ -45,11 +45,3 @@ For production use cases requiring similar functionality, consider professional-
    - Limited entropy sources on some systems
 
 ---
-
-## 💾 Secure Deletion Challenges
-
-### The Fundamental Problem
-Modern storage systems make reliable data deletion extremely difficult or impossible:
-
-#### 1. Solid State Drives (SSDs)
-**Issue**: Wear leveling and over-provisioning
